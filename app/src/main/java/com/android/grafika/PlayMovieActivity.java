@@ -16,20 +16,21 @@
 
 package com.android.grafika;
 
-import android.os.Bundle;
-import android.app.Activity;
 import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.Spinner;
-import android.widget.AdapterView.OnItemSelectedListener;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,7 +47,7 @@ import java.io.IOException;
  * TODO: investigate crash when screen is rotated while movie is playing (need
  *       to have onPause() wait for playback to stop)
  */
-public class PlayMovieActivity extends Activity implements OnItemSelectedListener,
+public class PlayMovieActivity extends AppCompatActivity implements OnItemSelectedListener,
         TextureView.SurfaceTextureListener, MoviePlayer.PlayerFeedback {
     private static final String TAG = MainActivity.TAG;
 

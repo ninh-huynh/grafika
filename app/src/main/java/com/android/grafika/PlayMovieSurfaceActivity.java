@@ -24,11 +24,12 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.app.Activity;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.grafika.gles.EglCore;
 import com.android.grafika.gles.WindowSurface;
@@ -68,7 +69,7 @@ import java.io.IOException;
  * The actual playback of the video -- sending frames to a Surface -- is the same for
  * TextureView and SurfaceView.
  */
-public class PlayMovieSurfaceActivity extends Activity implements OnItemSelectedListener,
+public class PlayMovieSurfaceActivity extends AppCompatActivity implements OnItemSelectedListener,
         SurfaceHolder.Callback, MoviePlayer.PlayerFeedback {
     private static final String TAG = MainActivity.TAG;
 

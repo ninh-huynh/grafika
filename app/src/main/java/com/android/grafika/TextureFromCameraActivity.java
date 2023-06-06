@@ -31,7 +31,8 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.app.Activity;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.grafika.gles.Drawable2d;
 import com.android.grafika.gles.EglCore;
@@ -76,7 +77,7 @@ import java.lang.ref.WeakReference;
  * <li> (For most things) The UI thread updates some text views.
  * </ol>
  */
-public class TextureFromCameraActivity extends Activity implements SurfaceHolder.Callback,
+public class TextureFromCameraActivity extends AppCompatActivity implements SurfaceHolder.Callback,
         SeekBar.OnSeekBarChangeListener {
     private static final String TAG = MainActivity.TAG;
 

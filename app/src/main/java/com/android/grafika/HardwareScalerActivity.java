@@ -16,6 +16,7 @@
 
 package com.android.grafika;
 
+import android.graphics.Rect;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.os.Bundle;
@@ -31,8 +32,8 @@ import android.view.View;
 import android.widget.CheckBox;
 import android.widget.RadioButton;
 import android.widget.TextView;
-import android.app.Activity;
-import android.graphics.Rect;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.grafika.gles.Drawable2d;
 import com.android.grafika.gles.EglCore;
@@ -59,7 +60,7 @@ import java.lang.ref.WeakReference;
  * <p>
  * TODO: examine effects on touch input
  */
-public class HardwareScalerActivity extends Activity implements SurfaceHolder.Callback,
+public class HardwareScalerActivity extends AppCompatActivity implements SurfaceHolder.Callback,
         Choreographer.FrameCallback {
     private static final String TAG = MainActivity.TAG;
 

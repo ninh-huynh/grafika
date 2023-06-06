@@ -16,20 +16,21 @@
 
 package com.android.grafika;
 
-import android.opengl.GLES20;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.Surface;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
-import android.view.View;
-import android.app.Activity;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
+import android.opengl.GLES20;
+import android.os.Bundle;
 import android.os.Trace;
+import android.util.Log;
+import android.view.Surface;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.view.View;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.grafika.gles.EglCore;
 import com.android.grafika.gles.WindowSurface;
@@ -46,7 +47,7 @@ import com.android.grafika.gles.WindowSurface;
  * <code>systrace.py --app=com.android.grafika gfx view sched dalvik</code>
  * (most interesting while bouncing).
  */
-public class MultiSurfaceActivity extends Activity implements SurfaceHolder.Callback {
+public class MultiSurfaceActivity extends AppCompatActivity implements SurfaceHolder.Callback {
     private static final String TAG = MainActivity.TAG;
 
     // Number of steps in each direction.  There's actually N+1 positions because we

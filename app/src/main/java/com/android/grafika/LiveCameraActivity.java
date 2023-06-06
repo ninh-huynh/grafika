@@ -16,17 +16,18 @@
 
 package com.android.grafika;
 
-import android.app.Activity;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.Display;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.WindowManager;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.IOException;
 
@@ -35,7 +36,7 @@ import java.io.IOException;
  * <p>
  * TODO: add options for different display sizes, frame rates, camera selection, etc.
  */
-public class LiveCameraActivity extends Activity implements TextureView.SurfaceTextureListener {
+public class LiveCameraActivity extends AppCompatActivity implements TextureView.SurfaceTextureListener {
     private static final String TAG = MainActivity.TAG;
 
     private Camera mCamera;

@@ -16,6 +16,8 @@
 
 package com.android.grafika;
 
+import android.content.DialogInterface;
+import android.content.res.Resources;
 import android.opengl.GLES20;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -25,10 +27,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.res.Resources;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.grafika.gles.EglCore;
 import com.android.grafika.gles.OffscreenSurface;
@@ -42,7 +43,7 @@ import java.nio.ByteOrder;
 /**
  * Basic glReadPixels() speed test.
  */
-public class ReadPixelsActivity extends Activity {
+public class ReadPixelsActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.TAG;
 
     private static final int WIDTH = 1280;

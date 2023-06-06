@@ -17,7 +17,6 @@
 package com.android.grafika;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -25,6 +24,9 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.util.Log;
 import android.view.InflateException;
 import android.view.View;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 
 /**
  * Creates and displays an "about" box.

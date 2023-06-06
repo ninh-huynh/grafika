@@ -17,10 +17,12 @@
 package com.android.grafika;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.util.Log;
 import android.view.InflateException;
 import android.view.View;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 
 /**
  * Utility functions for work_dialog.

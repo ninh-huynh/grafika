@@ -16,6 +16,9 @@
 
 package com.android.grafika;
 
+import android.content.DialogInterface;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.opengl.GLES20;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -25,11 +28,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.grafika.gles.Drawable2d;
 import com.android.grafika.gles.EglCore;
@@ -47,7 +48,7 @@ import java.nio.ByteBuffer;
 /**
  * An unscientific test of texture upload speed.
  */
-public class TextureUploadActivity extends Activity {
+public class TextureUploadActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.TAG;
 
     // Texture width/height.

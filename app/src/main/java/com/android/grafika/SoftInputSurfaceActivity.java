@@ -26,7 +26,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Surface;
 import android.widget.TextView;
-import android.app.Activity;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,7 +40,7 @@ import java.nio.ByteBuffer;
  *
  * See also https://code.google.com/p/android/issues/detail?id=61194
  */
-public class SoftInputSurfaceActivity extends Activity {
+public class SoftInputSurfaceActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.TAG;
     private static final boolean VERBOSE = true;
 

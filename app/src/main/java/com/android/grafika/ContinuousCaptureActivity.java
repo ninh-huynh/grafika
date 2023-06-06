@@ -22,7 +22,6 @@ import android.opengl.GLES20;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.Display;
 import android.view.Surface;
@@ -33,7 +32,9 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.app.Activity;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.grafika.gles.EglCore;
 import com.android.grafika.gles.FullFrameRect;
@@ -56,7 +57,7 @@ import java.lang.ref.WeakReference;
  * through our Handler.  That causes us to render the new frame to the display and to
  * our video encoder.
  */
-public class ContinuousCaptureActivity extends Activity implements SurfaceHolder.Callback,
+public class ContinuousCaptureActivity extends AppCompatActivity implements SurfaceHolder.Callback,
         SurfaceTexture.OnFrameAvailableListener {
     private static final String TAG = MainActivity.TAG;
 

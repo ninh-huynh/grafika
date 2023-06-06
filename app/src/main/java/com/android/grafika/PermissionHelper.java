@@ -18,14 +18,15 @@ package com.android.grafika;
 
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.provider.Settings;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 /**
  * Helper class for handling dangerous permissions for Android API level >= 23 which
@@ -33,15 +34,15 @@ import android.widget.Toast;
  */
 class PermissionHelper {
   public static final int  RC_PERMISSION_REQUEST = 9222;
-  public static boolean hasCameraPermission(Activity activity) {
+  public static boolean hasCameraPermission(AppCompatActivity activity) {
     return ContextCompat.checkSelfPermission(activity,
             Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
   }
-  public static boolean hasWriteStoragePermission(Activity activity) {
+  public static boolean hasWriteStoragePermission(AppCompatActivity activity) {
     return ContextCompat.checkSelfPermission(activity,
             Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
   }
-  public static void requestCameraPermission(Activity activity, boolean requestWritePermission) {
+  public static void requestCameraPermission(AppCompatActivity activity, boolean requestWritePermission) {
 
     boolean showRationale = ActivityCompat.shouldShowRequestPermissionRationale(activity,
               Manifest.permission.CAMERA) || (requestWritePermission &&
@@ -60,7 +61,7 @@ class PermissionHelper {
       }
     }
 
-  public static void requestWriteStoragePermission(Activity activity) {
+  public static void requestWriteStoragePermission(AppCompatActivity activity) {
     boolean showRationale = ActivityCompat.shouldShowRequestPermissionRationale(activity,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE);
     if (showRationale) {
@@ -78,7 +79,7 @@ class PermissionHelper {
   }
 
   /** Launch Application Setting to grant permission. */
-  public static void launchPermissionSettings(Activity activity) {
+  public static void launchPermissionSettings(AppCompatActivity activity) {
     Intent intent = new Intent();
     intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
     intent.setData(Uri.fromParts("package", activity.getPackageName(), null));

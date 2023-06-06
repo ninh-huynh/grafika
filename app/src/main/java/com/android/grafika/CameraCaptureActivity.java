@@ -16,6 +16,8 @@
 
 package com.android.grafika;
 
+import android.graphics.SurfaceTexture;
+import android.hardware.Camera;
 import android.opengl.EGL14;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
@@ -23,8 +25,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.view.Display;
 import android.view.Surface;
@@ -36,10 +36,11 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.app.Activity;
-import android.graphics.SurfaceTexture;
-import android.hardware.Camera;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.grafika.gles.FullFrameRect;
 import com.android.grafika.gles.Texture2dProgram;
@@ -125,7 +126,7 @@ import javax.microedition.khronos.opengles.GL10;
  * continues to generate preview frames while the Activity is paused.)  The video encoder object
  * is managed as a static property of the Activity.
  */
-public class CameraCaptureActivity extends Activity
+public class CameraCaptureActivity extends AppCompatActivity
         implements SurfaceTexture.OnFrameAvailableListener, OnItemSelectedListener {
     private static final String TAG = MainActivity.TAG;
     private static final boolean VERBOSE = false;

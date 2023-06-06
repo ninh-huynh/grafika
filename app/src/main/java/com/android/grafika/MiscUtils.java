@@ -16,11 +16,12 @@
 
 package com.android.grafika;
 
-import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -92,7 +93,7 @@ public class MiscUtils {
      * <p>
      * The actual refresh rate can vary slightly (e.g. 58-62fps on a 60fps device).
      */
-    public static long getDisplayRefreshNsec(Activity activity) {
+    public static long getDisplayRefreshNsec(AppCompatActivity activity) {
         Display display = ((WindowManager)
                 activity.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
         double displayFps = display.getRefreshRate();

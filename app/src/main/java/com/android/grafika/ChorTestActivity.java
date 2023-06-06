@@ -20,14 +20,15 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.app.Activity;
 import android.util.Log;
 import android.view.Choreographer;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 /**
  * Trivial activity used to test Choreographer behavior.
  */
-public class ChorTestActivity extends Activity {
+public class ChorTestActivity extends AppCompatActivity {
     private static final String TAG = "chor-test";
 
     ChorRenderThread mRenderThread;

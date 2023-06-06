@@ -16,16 +16,17 @@
 
 package com.android.grafika;
 
-import android.os.Bundle;
-import android.util.Log;
-import android.view.Surface;
-import android.view.TextureView;
-import android.app.Activity;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Surface;
+import android.view.TextureView;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 /**
  * A demonstration of using Canvas to draw on a TextureView.  Based on TextureViewGLActivity.
@@ -36,7 +37,7 @@ import android.graphics.SurfaceTexture;
  * to run as the TextureView is being destroyed (we stop the thread in onDestroy() rather
  * than onPause()).  Normally the renderer would be stopped when the application pauses.
  */
-public class TextureViewCanvasActivity extends Activity {
+public class TextureViewCanvasActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.TAG;
 
     private TextureView mTextureView;

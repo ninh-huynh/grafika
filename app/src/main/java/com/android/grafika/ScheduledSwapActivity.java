@@ -22,7 +22,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Trace;
-import android.app.Activity;
 import android.util.Log;
 import android.view.Choreographer;
 import android.view.Surface;
@@ -30,10 +29,12 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.AdapterView.OnItemSelectedListener;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.grafika.gles.EglCore;
 import com.android.grafika.gles.GlUtil;
@@ -55,7 +56,7 @@ import java.lang.ref.WeakReference;
  * actual-reported vsync time (which may itself be slightly offset from the actual-actual
  * vsync time).  None of this is terribly important unless you care about A/V sync.
  */
-public class ScheduledSwapActivity extends Activity implements OnItemSelectedListener,
+public class ScheduledSwapActivity extends AppCompatActivity implements OnItemSelectedListener,
         SurfaceHolder.Callback, Choreographer.FrameCallback {
     private static final String TAG = MainActivity.TAG;
 

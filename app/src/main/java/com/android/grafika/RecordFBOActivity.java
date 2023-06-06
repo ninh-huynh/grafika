@@ -16,6 +16,7 @@
 
 package com.android.grafika;
 
+import android.graphics.Rect;
 import android.opengl.GLES20;
 import android.opengl.GLES30;
 import android.opengl.Matrix;
@@ -32,8 +33,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.TextView;
-import android.app.Activity;
-import android.graphics.Rect;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.grafika.gles.Drawable2d;
 import com.android.grafika.gles.EglCore;
@@ -93,7 +94,7 @@ import java.lang.ref.WeakReference;
  * <p>
  * TODO: show the MP4 file name somewhere in the UI so people can find it in the player
  */
-public class RecordFBOActivity extends Activity implements SurfaceHolder.Callback,
+public class RecordFBOActivity extends AppCompatActivity implements SurfaceHolder.Callback,
         Choreographer.FrameCallback {
     private static final String TAG = MainActivity.TAG;
 

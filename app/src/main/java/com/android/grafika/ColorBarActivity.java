@@ -16,21 +16,22 @@
 
 package com.android.grafika;
 
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.PixelFormat;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.app.Activity;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.PixelFormat;
-import android.graphics.Typeface;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 /**
  * Show color bars.
  */
-public class ColorBarActivity extends Activity implements SurfaceHolder.Callback {
+public class ColorBarActivity extends AppCompatActivity implements SurfaceHolder.Callback {
     private static final String TAG = MainActivity.TAG;
 
     private SurfaceView mSurfaceView;
