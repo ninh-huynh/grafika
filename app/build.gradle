@@ -22,6 +22,7 @@ android {
     minSdkVersion 14
     targetSdkVersion 28
   }
+  namespace 'com.android.grafika'
 }
 
 dependencies {
