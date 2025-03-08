@@ -24,10 +24,18 @@ import android.app.Activity;
 import android.util.Log;
 import android.view.Choreographer;
 
+import androidx.activity.ComponentActivity;
+import androidx.activity.EdgeToEdge;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
+import com.android.grafika.databinding.ActivityChorTestBinding;
+
 /**
  * Trivial activity used to test Choreographer behavior.
  */
-public class ChorTestActivity extends Activity {
+public class ChorTestActivity extends ComponentActivity {
     private static final String TAG = "chor-test";
 
     ChorRenderThread mRenderThread;
@@ -35,11 +43,23 @@ public class ChorTestActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_chor_test);
+        ActivityChorTestBinding binding = ActivityChorTestBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         mRenderThread = new ChorRenderThread();
         mRenderThread.start();
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(
+                    WindowInsetsCompat.Type.systemBars()
+                            | WindowInsetsCompat.Type.displayCutout()
+            );
+            v.setPadding(insets.left, insets.top, insets.right, insets.bottom);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
     }
 
     @Override
