@@ -31,6 +31,13 @@ import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 
+import androidx.activity.ComponentActivity;
+import androidx.activity.EdgeToEdge;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
+import com.android.grafika.databinding.ActivityTextureUploadBinding;
 import com.android.grafika.gles.Drawable2d;
 import com.android.grafika.gles.EglCore;
 import com.android.grafika.gles.GlUtil;
@@ -47,7 +54,7 @@ import java.nio.ByteBuffer;
 /**
  * An unscientific test of texture upload speed.
  */
-public class TextureUploadActivity extends Activity {
+public class TextureUploadActivity extends ComponentActivity {
     private static final String TAG = MainActivity.TAG;
 
     // Texture width/height.
@@ -60,8 +67,19 @@ public class TextureUploadActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_texture_upload);
+        ActivityTextureUploadBinding binding = ActivityTextureUploadBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(
+                    WindowInsetsCompat.Type.systemBars()
+                            | WindowInsetsCompat.Type.displayCutout()
+            );
+            v.setPadding(insets.left, insets.top, insets.right, insets.bottom);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
     }
 
     /**
