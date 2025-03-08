@@ -35,6 +35,13 @@ import android.widget.TextView;
 import android.app.Activity;
 import android.graphics.Rect;
 
+import androidx.activity.ComponentActivity;
+import androidx.activity.EdgeToEdge;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
+import com.android.grafika.databinding.ActivityRecordFboBinding;
 import com.android.grafika.gles.Drawable2d;
 import com.android.grafika.gles.EglCore;
 import com.android.grafika.gles.FlatShadedProgram;
@@ -93,7 +100,7 @@ import java.lang.ref.WeakReference;
  * <p>
  * TODO: show the MP4 file name somewhere in the UI so people can find it in the player
  */
-public class RecordFBOActivity extends Activity implements SurfaceHolder.Callback,
+public class RecordFBOActivity extends ComponentActivity implements SurfaceHolder.Callback,
         Choreographer.FrameCallback {
     private static final String TAG = MainActivity.TAG;
 
@@ -112,14 +119,25 @@ public class RecordFBOActivity extends Activity implements SurfaceHolder.Callbac
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_record_fbo);
+        ActivityRecordFboBinding binding = ActivityRecordFboBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         mSelectedRecordMethod = RECMETHOD_FBO;
         updateControls();
 
         SurfaceView sv = (SurfaceView) findViewById(R.id.fboActivity_surfaceView);
         sv.getHolder().addCallback(this);
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(
+                    WindowInsetsCompat.Type.systemBars()
+                            | WindowInsetsCompat.Type.displayCutout()
+            );
+            v.setPadding(insets.left, insets.top, insets.right, insets.bottom);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
 
         Log.d(TAG, "RecordFBOActivity: onCreate done");
     }
