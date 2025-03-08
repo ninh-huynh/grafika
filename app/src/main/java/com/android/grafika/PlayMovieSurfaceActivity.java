@@ -30,6 +30,13 @@ import android.widget.Spinner;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.app.Activity;
 
+import androidx.activity.ComponentActivity;
+import androidx.activity.EdgeToEdge;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
+import com.android.grafika.databinding.ActivityPlayMovieSurfaceBinding;
 import com.android.grafika.gles.EglCore;
 import com.android.grafika.gles.WindowSurface;
 
@@ -68,7 +75,7 @@ import java.io.IOException;
  * The actual playback of the video -- sending frames to a Surface -- is the same for
  * TextureView and SurfaceView.
  */
-public class PlayMovieSurfaceActivity extends Activity implements OnItemSelectedListener,
+public class PlayMovieSurfaceActivity extends ComponentActivity implements OnItemSelectedListener,
         SurfaceHolder.Callback, MoviePlayer.PlayerFeedback {
     private static final String TAG = MainActivity.TAG;
 
@@ -90,8 +97,10 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
-        setContentView(getContentViewId());
+        ActivityPlayMovieSurfaceBinding binding = ActivityPlayMovieSurfaceBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         mSurfaceView = (SurfaceView) findViewById(R.id.playMovie_surface);
         mSurfaceView.getHolder().addCallback(this);
@@ -109,6 +118,16 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
         spinner.setOnItemSelectedListener(this);
 
         updateControls();
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(
+                    WindowInsetsCompat.Type.systemBars()
+                            | WindowInsetsCompat.Type.displayCutout()
+            );
+            v.setPadding(insets.left, insets.top, insets.right, insets.bottom);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
     }
 
     @Override
