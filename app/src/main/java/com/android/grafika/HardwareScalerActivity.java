@@ -34,6 +34,13 @@ import android.widget.TextView;
 import android.app.Activity;
 import android.graphics.Rect;
 
+import androidx.activity.ComponentActivity;
+import androidx.activity.EdgeToEdge;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
+import com.android.grafika.databinding.ActivityHardwareScalerBinding;
 import com.android.grafika.gles.Drawable2d;
 import com.android.grafika.gles.EglCore;
 import com.android.grafika.gles.FlatShadedProgram;
@@ -59,7 +66,7 @@ import java.lang.ref.WeakReference;
  * <p>
  * TODO: examine effects on touch input
  */
-public class HardwareScalerActivity extends Activity implements SurfaceHolder.Callback,
+public class HardwareScalerActivity extends ComponentActivity implements SurfaceHolder.Callback,
         Choreographer.FrameCallback {
     private static final String TAG = MainActivity.TAG;
 
@@ -91,9 +98,11 @@ public class HardwareScalerActivity extends Activity implements SurfaceHolder.Ca
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
         Log.d(TAG, "HardwareScalerActivity: onCreate");
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_hardware_scaler);
+        ActivityHardwareScalerBinding binding = ActivityHardwareScalerBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         mSelectedSize = SURFACE_SIZE_FULL;
         mFullViewWidth = mFullViewHeight = 512;     // want actual view size, but it's not avail
@@ -102,6 +111,16 @@ public class HardwareScalerActivity extends Activity implements SurfaceHolder.Ca
 
         SurfaceView sv = (SurfaceView) findViewById(R.id.hardwareScaler_surfaceView);
         sv.getHolder().addCallback(this);
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(
+                    WindowInsetsCompat.Type.systemBars()
+                            | WindowInsetsCompat.Type.displayCutout()
+            );
+            v.setPadding(insets.left, insets.top, insets.right, insets.bottom);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
     }
 
     @Override
