@@ -150,5 +150,6 @@
     <string name="title_color_bar">RGB color bars</string>
     <string name="title_scheduled_swap">Scheduled swap</string>
     <string name="title_texture_from_camera">Texture from camera</string>
+    <string name="title_activity_list_sample">ListSampleActivity</string>
 
 </resources>
