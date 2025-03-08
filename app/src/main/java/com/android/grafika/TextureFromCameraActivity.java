@@ -33,6 +33,13 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.app.Activity;
 
+import androidx.activity.ComponentActivity;
+import androidx.activity.EdgeToEdge;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
+import com.android.grafika.databinding.ActivityTextureFromCameraBinding;
 import com.android.grafika.gles.Drawable2d;
 import com.android.grafika.gles.EglCore;
 import com.android.grafika.gles.GlUtil;
@@ -76,7 +83,7 @@ import java.lang.ref.WeakReference;
  * <li> (For most things) The UI thread updates some text views.
  * </ol>
  */
-public class TextureFromCameraActivity extends Activity implements SurfaceHolder.Callback,
+public class TextureFromCameraActivity extends ComponentActivity implements SurfaceHolder.Callback,
         SeekBar.OnSeekBarChangeListener {
     private static final String TAG = MainActivity.TAG;
 
@@ -120,8 +127,10 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_texture_from_camera);
+        ActivityTextureFromCameraBinding binding = ActivityTextureFromCameraBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         mHandler = new MainHandler(this);
 
@@ -140,6 +149,16 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
         mRotateBar.setOnSeekBarChangeListener(this);
 
         updateControls();
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(
+                    WindowInsetsCompat.Type.systemBars()
+                            | WindowInsetsCompat.Type.displayCutout()
+            );
+            v.setPadding(insets.left, insets.top, insets.right, insets.bottom);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
     }
 
     @Override
