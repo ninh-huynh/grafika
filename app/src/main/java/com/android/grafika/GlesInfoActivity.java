@@ -25,6 +25,13 @@ import android.view.View;
 import android.widget.TextView;
 import android.app.Activity;
 
+import androidx.activity.ComponentActivity;
+import androidx.activity.EdgeToEdge;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
+import com.android.grafika.databinding.ActivityGlesInfoBinding;
 import com.android.grafika.gles.EglCore;
 import com.android.grafika.gles.OffscreenSurface;
 
@@ -36,7 +43,7 @@ import java.util.Arrays;
 /**
  * Simple activity that gathers and displays information from the GLES driver.
  */
-public class GlesInfoActivity extends Activity {
+public class GlesInfoActivity extends ComponentActivity {
     private static final String TAG = MainActivity.TAG;
 
     private String mGlInfo;
@@ -44,8 +51,10 @@ public class GlesInfoActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_gles_info);
+        ActivityGlesInfoBinding binding = ActivityGlesInfoBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         mOutputFile = new File(getFilesDir(), "gles-info.txt");
         TextView tv = (TextView) findViewById(R.id.glesInfoFile_text);
@@ -55,6 +64,16 @@ public class GlesInfoActivity extends Activity {
 
         tv = (TextView) findViewById(R.id.glesInfo_text);
         tv.setText(mGlInfo);
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(
+                    WindowInsetsCompat.Type.systemBars()
+                            | WindowInsetsCompat.Type.displayCutout()
+            );
+            v.setPadding(insets.left, insets.top, insets.right, insets.bottom);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
     }
 
     /**
