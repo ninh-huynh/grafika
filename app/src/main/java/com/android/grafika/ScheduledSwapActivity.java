@@ -35,6 +35,12 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.AdapterView.OnItemSelectedListener;
 
+import androidx.activity.ComponentActivity;
+import androidx.activity.EdgeToEdge;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import com.android.grafika.databinding.ActivityScheduledSwapBinding;
 import com.android.grafika.gles.EglCore;
 import com.android.grafika.gles.GlUtil;
 import com.android.grafika.gles.WindowSurface;
@@ -55,7 +61,7 @@ import java.lang.ref.WeakReference;
  * actual-reported vsync time (which may itself be slightly offset from the actual-actual
  * vsync time).  None of this is terribly important unless you care about A/V sync.
  */
-public class ScheduledSwapActivity extends Activity implements OnItemSelectedListener,
+public class ScheduledSwapActivity extends ComponentActivity implements OnItemSelectedListener,
         SurfaceHolder.Callback, Choreographer.FrameCallback {
     private static final String TAG = MainActivity.TAG;
 
@@ -117,8 +123,10 @@ public class ScheduledSwapActivity extends Activity implements OnItemSelectedLis
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_scheduled_swap);
+        ActivityScheduledSwapBinding binding = ActivityScheduledSwapBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         // Update-rate spinner; specifies the frame rate.
         Spinner spinner = (Spinner) findViewById(R.id.scheduledSwapUpdate_spinner);
@@ -145,6 +153,16 @@ public class ScheduledSwapActivity extends Activity implements OnItemSelectedLis
 
         SurfaceView sv = (SurfaceView) findViewById(R.id.scheduledSwap_surfaceView);
         sv.getHolder().addCallback(this);
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(
+                    WindowInsetsCompat.Type.systemBars()
+                            | WindowInsetsCompat.Type.displayCutout()
+            );
+            v.setPadding(insets.left, insets.top, insets.right, insets.bottom);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
     }
 
     @Override
