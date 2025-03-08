@@ -23,8 +23,15 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+
+import androidx.activity.ComponentActivity;
+import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
 import android.util.Log;
 import android.view.Display;
 import android.view.Surface;
@@ -41,6 +48,7 @@ import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.widget.Toast;
 
+import com.android.grafika.databinding.ActivityCameraCaptureBinding;
 import com.android.grafika.gles.FullFrameRect;
 import com.android.grafika.gles.Texture2dProgram;
 
@@ -125,7 +133,7 @@ import javax.microedition.khronos.opengles.GL10;
  * continues to generate preview frames while the Activity is paused.)  The video encoder object
  * is managed as a static property of the Activity.
  */
-public class CameraCaptureActivity extends Activity
+public class CameraCaptureActivity extends ComponentActivity
         implements SurfaceTexture.OnFrameAvailableListener, OnItemSelectedListener {
     private static final String TAG = MainActivity.TAG;
     private static final boolean VERBOSE = false;
@@ -151,8 +159,10 @@ public class CameraCaptureActivity extends Activity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_camera_capture);
+        ActivityCameraCaptureBinding binding = ActivityCameraCaptureBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         File outputFile = new File(getFilesDir(), "camera-test.mp4");
         TextView fileText = (TextView) findViewById(R.id.cameraOutputFile_text);
@@ -180,6 +190,16 @@ public class CameraCaptureActivity extends Activity
         mRenderer = new CameraSurfaceRenderer(mCameraHandler, sVideoEncoder, outputFile);
         mGLView.setRenderer(mRenderer);
         mGLView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(
+                    WindowInsetsCompat.Type.systemBars()
+                            | WindowInsetsCompat.Type.displayCutout()
+            );
+            v.setPadding(insets.left, insets.top, insets.right, insets.bottom);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
 
         Log.d(TAG, "onCreate complete: " + this);
     }
