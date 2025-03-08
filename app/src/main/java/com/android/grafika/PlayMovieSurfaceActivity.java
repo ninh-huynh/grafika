@@ -99,8 +99,8 @@ public class PlayMovieSurfaceActivity extends ComponentActivity implements OnIte
     protected void onCreate(Bundle savedInstanceState) {
         EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
-        ActivityPlayMovieSurfaceBinding binding = ActivityPlayMovieSurfaceBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+        View root = getLayoutInflater().inflate(getContentViewId(), null);
+        setContentView(root);
 
         mSurfaceView = (SurfaceView) findViewById(R.id.playMovie_surface);
         mSurfaceView.getHolder().addCallback(this);
@@ -119,7 +119,7 @@ public class PlayMovieSurfaceActivity extends ComponentActivity implements OnIte
 
         updateControls();
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, windowInsets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(root, (v, windowInsets) -> {
             Insets insets = windowInsets.getInsets(
                     WindowInsetsCompat.Type.systemBars()
                             | WindowInsetsCompat.Type.displayCutout()
