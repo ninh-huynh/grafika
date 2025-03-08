@@ -30,6 +30,13 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.res.Resources;
 
+import androidx.activity.ComponentActivity;
+import androidx.activity.EdgeToEdge;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
+import com.android.grafika.databinding.ActivityReadPixelsBinding;
 import com.android.grafika.gles.EglCore;
 import com.android.grafika.gles.OffscreenSurface;
 
@@ -42,7 +49,7 @@ import java.nio.ByteOrder;
 /**
  * Basic glReadPixels() speed test.
  */
-public class ReadPixelsActivity extends Activity {
+public class ReadPixelsActivity extends ComponentActivity {
     private static final String TAG = MainActivity.TAG;
 
     private static final int WIDTH = 1280;
@@ -54,8 +61,20 @@ public class ReadPixelsActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_read_pixels);
+        ActivityReadPixelsBinding binding = ActivityReadPixelsBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(
+                    WindowInsetsCompat.Type.systemBars()
+                            | WindowInsetsCompat.Type.displayCutout()
+            );
+            v.setPadding(insets.left, insets.top, insets.right, insets.bottom);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
     }
 
     /**
