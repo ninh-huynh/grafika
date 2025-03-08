@@ -30,6 +30,7 @@ android {
   namespace 'com.android.grafika'
 
   buildFeatures {
+    viewBinding true
     compose true
   }
   compileOptions {
