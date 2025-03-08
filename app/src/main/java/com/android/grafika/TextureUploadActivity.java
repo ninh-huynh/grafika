@@ -389,7 +389,7 @@ public class TextureUploadActivity extends ComponentActivity {
                 // save the final frame into a file
                 long startWhen = System.nanoTime();
                 try {
-                    eglSurface.saveFrame(new File(Environment.getExternalStorageDirectory(),
+                    eglSurface.saveFrame(new File(getFilesDir(),
                             "test.png"));
                 } catch (IOException ioe) {
                     throw new RuntimeException(ioe);
