@@ -22,7 +22,14 @@ import android.opengl.GLES20;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+
+import androidx.activity.ComponentActivity;
+import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
 import android.util.Log;
 import android.view.Display;
 import android.view.Surface;
@@ -35,6 +42,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.app.Activity;
 
+import com.android.grafika.databinding.ActivityContinuousCaptureBinding;
 import com.android.grafika.gles.EglCore;
 import com.android.grafika.gles.FullFrameRect;
 import com.android.grafika.gles.Texture2dProgram;
@@ -56,7 +64,7 @@ import java.lang.ref.WeakReference;
  * through our Handler.  That causes us to render the new frame to the display and to
  * our video encoder.
  */
-public class ContinuousCaptureActivity extends Activity implements SurfaceHolder.Callback,
+public class ContinuousCaptureActivity extends ComponentActivity implements SurfaceHolder.Callback,
         SurfaceTexture.OnFrameAvailableListener {
     private static final String TAG = MainActivity.TAG;
 
@@ -163,8 +171,10 @@ public class ContinuousCaptureActivity extends Activity implements SurfaceHolder
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_continuous_capture);
+        ActivityContinuousCaptureBinding binding = ActivityContinuousCaptureBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         SurfaceView sv = (SurfaceView) findViewById(R.id.continuousCapture_surfaceView);
         SurfaceHolder sh = sv.getHolder();
@@ -176,6 +186,16 @@ public class ContinuousCaptureActivity extends Activity implements SurfaceHolder
         mOutputFile = new File(getFilesDir(), "continuous-capture.mp4");
         mSecondsOfVideo = 0.0f;
         updateControls();
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(
+                    WindowInsetsCompat.Type.systemBars()
+                            | WindowInsetsCompat.Type.displayCutout()
+            );
+            v.setPadding(insets.left, insets.top, insets.right, insets.bottom);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
     }
 
     @Override
