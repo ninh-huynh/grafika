@@ -31,6 +31,14 @@ import android.widget.CheckBox;
 import android.widget.Spinner;
 import android.widget.AdapterView.OnItemSelectedListener;
 
+import androidx.activity.ComponentActivity;
+import androidx.activity.EdgeToEdge;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
+import com.android.grafika.databinding.ActivityPlayMovieBinding;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -46,7 +54,7 @@ import java.io.IOException;
  * TODO: investigate crash when screen is rotated while movie is playing (need
  *       to have onPause() wait for playback to stop)
  */
-public class PlayMovieActivity extends Activity implements OnItemSelectedListener,
+public class PlayMovieActivity extends ComponentActivity implements OnItemSelectedListener,
         TextureView.SurfaceTextureListener, MoviePlayer.PlayerFeedback {
     private static final String TAG = MainActivity.TAG;
 
@@ -61,8 +69,10 @@ public class PlayMovieActivity extends Activity implements OnItemSelectedListene
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_play_movie);
+        ActivityPlayMovieBinding binding = ActivityPlayMovieBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         mTextureView = (TextureView) findViewById(R.id.movie_texture_view);
         mTextureView.setSurfaceTextureListener(this);
@@ -80,6 +90,16 @@ public class PlayMovieActivity extends Activity implements OnItemSelectedListene
         spinner.setOnItemSelectedListener(this);
 
         updateControls();
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(
+                    WindowInsetsCompat.Type.systemBars()
+                            | WindowInsetsCompat.Type.displayCutout()
+            );
+            v.setPadding(insets.left, insets.top, insets.right, insets.bottom);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
     }
 
     @Override
