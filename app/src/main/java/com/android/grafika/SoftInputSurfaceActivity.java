@@ -28,6 +28,14 @@ import android.view.Surface;
 import android.widget.TextView;
 import android.app.Activity;
 
+import androidx.activity.ComponentActivity;
+import androidx.activity.EdgeToEdge;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
+import com.android.grafika.databinding.ActivitySoftInputSurfaceBinding;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -39,7 +47,7 @@ import java.nio.ByteBuffer;
  *
  * See also https://code.google.com/p/android/issues/detail?id=61194
  */
-public class SoftInputSurfaceActivity extends Activity {
+public class SoftInputSurfaceActivity extends ComponentActivity {
     private static final String TAG = MainActivity.TAG;
     private static final boolean VERBOSE = true;
 
@@ -64,8 +72,20 @@ public class SoftInputSurfaceActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_soft_input_surface);
+        ActivitySoftInputSurfaceBinding binding = ActivitySoftInputSurfaceBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(
+                    WindowInsetsCompat.Type.systemBars()
+                            | WindowInsetsCompat.Type.displayCutout()
+            );
+            v.setPadding(insets.left, insets.top, insets.right, insets.bottom);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
 
         TextView tv = (TextView) findViewById(R.id.softInputResult_text);
 
