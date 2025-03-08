@@ -23,6 +23,14 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
 
+import androidx.activity.ComponentActivity;
+import androidx.activity.EdgeToEdge;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
+import com.android.grafika.databinding.ActivityDoubleDecodeBinding;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -36,7 +44,7 @@ import java.io.IOException;
  * <p>
  * TODO: consider shutting down when the screen is turned off, to preserve battery.
  */
-public class DoubleDecodeActivity extends Activity {
+public class DoubleDecodeActivity extends ComponentActivity {
     private static final String TAG = MainActivity.TAG;
 
     private static final int VIDEO_COUNT = 2;
@@ -47,8 +55,10 @@ public class DoubleDecodeActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_double_decode);
+        ActivityDoubleDecodeBinding binding = ActivityDoubleDecodeBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         if (!sVideoRunning) {
             sBlob[0] = new VideoBlob((TextureView) findViewById(R.id.double1_texture_view),
@@ -60,6 +70,16 @@ public class DoubleDecodeActivity extends Activity {
             sBlob[0].recreateView((TextureView) findViewById(R.id.double1_texture_view));
             sBlob[1].recreateView((TextureView) findViewById(R.id.double2_texture_view));
         }
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(
+                    WindowInsetsCompat.Type.systemBars()
+                            | WindowInsetsCompat.Type.displayCutout()
+            );
+            v.setPadding(insets.left, insets.top, insets.right, insets.bottom);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
     }
 
     @Override
