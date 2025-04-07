@@ -71,7 +71,7 @@ dependencies {
   // custom design system based on Foundation)
 //  implementation 'androidx.compose.material:material-icons-core'
   // Optional - Add full set of material icons
-//  implementation 'androidx.compose.material:material-icons-extended'
+  implementation 'androidx.compose.material:material-icons-extended'
   // Optional - Add window size utils
   implementation 'androidx.compose.material3.adaptive:adaptive'
 

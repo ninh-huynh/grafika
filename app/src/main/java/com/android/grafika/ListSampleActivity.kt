@@ -214,6 +214,12 @@ private val TESTS = listOf(
         "PlayMovieSurfaceActivity"
     ),
     ListItem(
+        "Play video (GLSurfaceView)",
+        "Plays .mp4 videos from Gallery",
+        "PlayMovieGLSurfaceActivity"
+    ),
+
+    ListItem(
         "Record GL app",
         "Records GL app with FBO, re-render, or FB blit",
         "RecordFBOActivity"
