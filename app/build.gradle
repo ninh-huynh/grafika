@@ -21,11 +21,11 @@ plugins {
 
 
 android {
-  compileSdk 34
+  compileSdk 35
   defaultConfig {
     applicationId "com.google.grafika"
     minSdk 21
-    targetSdk 34
+    targetSdk 35
   }
   namespace 'com.android.grafika'
 
