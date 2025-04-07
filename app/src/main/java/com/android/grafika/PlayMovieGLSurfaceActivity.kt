@@ -1,7 +1,9 @@
 package com.android.grafika
 
+import android.graphics.SurfaceTexture
 import android.net.Uri
 import android.opengl.GLES20
+import android.opengl.GLSurfaceView
 import android.os.Bundle
 import android.util.Log
 import android.view.Surface
@@ -41,6 +43,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.grafika.player.MoviePlayerV2.PlayTask
 import com.android.grafika.databinding.ActivityPlayMovieGlsurfaceBinding
 import com.android.grafika.gles.EglCore
+import com.android.grafika.gles.FullFrameRect
+import com.android.grafika.gles.Texture2dProgram
 import com.android.grafika.gles.WindowSurface
 import com.android.grafika.player.MoviePlayerV2
 import com.android.grafika.ui.theme.GrafikaTheme
@@ -49,10 +53,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import timber.log.Timber
 import java.io.File
 import java.io.IOException
+import javax.microedition.khronos.egl.EGLConfig
+import javax.microedition.khronos.opengles.GL10
 
 class PlayMovieGLSurfaceActivity : ComponentActivity(),
     SurfaceHolder.Callback,
-    MoviePlayerV2.PlayerFeedback {
+    MoviePlayerV2.PlayerFeedback,
+    GLSurfaceView.Renderer,
+    SurfaceTexture.OnFrameAvailableListener{
 
     private var playTask: MoviePlayerV2.PlayTask? = null
 
@@ -71,8 +79,9 @@ class PlayMovieGLSurfaceActivity : ComponentActivity(),
         setContentView(binding.root)
 
         val movieFiles = MiscUtils.getFiles(filesDir, "*.mp4")
-        binding.playMovieSurface.holder.addCallback(this)
-
+        binding.glSurfaceView.setEGLContextClientVersion(3)
+        binding.glSurfaceView.setRenderer(this)
+        binding.glSurfaceView.renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
 
         binding.composeView.apply {
             setViewCompositionStrategy(ViewCompositionStrategy.Default)
@@ -133,31 +142,16 @@ class PlayMovieGLSurfaceActivity : ComponentActivity(),
                 if (playTask == null) {
 
                     val callback = com.android.grafika.player.SpeedControlCallback()
-                    val surface = binding.playMovieSurface.holder.surface
 
-                    // Don't leave the last frame of the previous video hanging on the screen.
-                    // Looks weird if the aspect ratio changes.
-                    clearSurface(surface)
+                    surfaceTexture!!.setOnFrameAvailableListener(this)
 
                     var player: MoviePlayerV2? = null
                     try {
-                        player = MoviePlayerV2(contentResolver, selectedUri!!, surface, callback)
+                        player = MoviePlayerV2(contentResolver, selectedUri!!, surface!!, callback)
                     } catch (ioe: IOException) {
-                        surface.release()
+                        surface!!.release()
                         return
                     }
-
-                    val layout = binding.playMovieAfl
-                    val width = player.videoWidth
-                    val height = player.videoHeight
-
-                    if (player.videoOrientation == 0 || player.videoOrientation == 180) {
-                        layout.setAspectRatio(width.toDouble() / height)
-                    } else {
-                        layout.setAspectRatio(height.toDouble() / width)
-                    }
-
-                    //holder.setFixedSize(width, height);
 
                     playTask = PlayTask(player, this)
                     updateUI()
@@ -167,8 +161,14 @@ class PlayMovieGLSurfaceActivity : ComponentActivity(),
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        binding.glSurfaceView.onResume()
+    }
+
     override fun onPause() {
         super.onPause()
+        binding.glSurfaceView.onPause()
 
         if (playTask != null) {
             stopPlayback()
@@ -218,6 +218,46 @@ class PlayMovieGLSurfaceActivity : ComponentActivity(),
         win.swapBuffers()
         win.release()
         eglCore.release()
+    }
+
+    private var fullScreen: FullFrameRect? = null
+    private var textureId: Int = -1
+    private var surfaceTexture: SurfaceTexture? = null
+    private var stMatrix = FloatArray(16)
+    private var surface: Surface? = null
+
+    override fun onSurfaceCreated(
+        gl: GL10?,
+        config: EGLConfig?
+    ) {
+        fullScreen = FullFrameRect(
+            Texture2dProgram(Texture2dProgram.ProgramType.TEXTURE_EXT)
+        )
+
+        textureId = fullScreen!!.createTextureObject()
+        surfaceTexture = SurfaceTexture(textureId)
+        surface = Surface(surfaceTexture)
+    }
+
+    override fun onSurfaceChanged(
+        gl: GL10?,
+        width: Int,
+        height: Int
+    ) {
+
+    }
+
+    override fun onDrawFrame(gl: GL10?) {
+        GLES20.glClearColor(0f, 0f, 0f, 0f)
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
+
+        surfaceTexture?.updateTexImage()
+        surfaceTexture?.getTransformMatrix(stMatrix)
+        fullScreen?.drawFrame(textureId, stMatrix)
+    }
+
+    override fun onFrameAvailable(surfaceTexture: SurfaceTexture?) {
+        binding.glSurfaceView.requestRender()
     }
 
 }

@@ -13,16 +13,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
-    <com.android.grafika.AspectFrameLayout
-        android:id="@+id/playMovie_afl"
+    <android.opengl.GLSurfaceView
+        android:id="@+id/gl_surface_view"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        >
-        <SurfaceView
-            android:id="@+id/playMovie_surface"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
-    </com.android.grafika.AspectFrameLayout>
+        />
 
 </LinearLayout>
