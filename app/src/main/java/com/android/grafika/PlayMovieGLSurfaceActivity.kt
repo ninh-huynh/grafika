@@ -54,7 +54,6 @@ class PlayMovieGLSurfaceActivity : ComponentActivity(),
     SurfaceHolder.Callback,
     MoviePlayerV2.PlayerFeedback {
 
-    private var movieFiles: Array<String> = emptyArray()
     private var playTask: MoviePlayerV2.PlayTask? = null
 
     private lateinit var binding: ActivityPlayMovieGlsurfaceBinding
@@ -71,7 +70,7 @@ class PlayMovieGLSurfaceActivity : ComponentActivity(),
 
         setContentView(binding.root)
 
-        movieFiles = MiscUtils.getFiles(filesDir, "*.mp4")
+        val movieFiles = MiscUtils.getFiles(filesDir, "*.mp4")
         binding.playMovieSurface.holder.addCallback(this)
 
 
