@@ -151,7 +151,13 @@ class PlayMovieGLSurfaceActivity : ComponentActivity(),
                     val layout = binding.playMovieAfl
                     val width = player.videoWidth
                     val height = player.videoHeight
-                    layout.setAspectRatio(width.toDouble() / height)
+
+                    if (player.videoOrientation == 0 || player.videoOrientation == 180) {
+                        layout.setAspectRatio(width.toDouble() / height)
+                    } else {
+                        layout.setAspectRatio(height.toDouble() / width)
+                    }
+
                     //holder.setFixedSize(width, height);
 
                     playTask = PlayTask(player, this)

@@ -21,6 +21,7 @@ import android.media.MediaCodec
 import android.media.MediaExtractor
 import android.media.MediaFormat
 import android.net.Uri
+import android.os.Build
 import android.os.Handler
 import android.os.Message
 import android.util.Log
@@ -60,6 +61,9 @@ class MoviePlayerV2(
      * Returns the height, in pixels, of the video.
      */
     var videoHeight: Int = 0
+        private set
+
+    var videoOrientation: Int = 0
         private set
 
 
@@ -132,8 +136,18 @@ class MoviePlayerV2(
             val format = extractor.getTrackFormat(trackIndex)
             this.videoWidth = format.getInteger(MediaFormat.KEY_WIDTH)
             this.videoHeight = format.getInteger(MediaFormat.KEY_HEIGHT)
+            this.videoOrientation = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                runCatching { format.getInteger(MediaFormat.KEY_ROTATION) }
+                    .onFailure { Timber.e(it) }
+                    .getOrNull() ?: 0
+            } else {
+                0
+            }
             if (VERBOSE) {
-                Log.d(TAG, "Video size is " + this.videoWidth + "x" + this.videoHeight)
+                Timber.tag(TAG).d(
+                    "Video size is %d x %d, orientation = %d",
+                    this.videoWidth, this.videoHeight, this.videoOrientation
+                )
             }
         } finally {
             extractor?.release()
@@ -521,7 +535,7 @@ class MoviePlayerV2(
 
     companion object {
         private val TAG = MainActivity.TAG
-        private const val VERBOSE = false
+        private const val VERBOSE = true
 
         /**
          * Selects the video track, if any.
