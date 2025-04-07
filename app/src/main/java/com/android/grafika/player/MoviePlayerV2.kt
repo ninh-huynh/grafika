@@ -138,7 +138,7 @@ class MoviePlayerV2(
             this.videoHeight = format.getInteger(MediaFormat.KEY_HEIGHT)
             this.videoOrientation = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 runCatching { format.getInteger(MediaFormat.KEY_ROTATION) }
-                    .onFailure { Timber.e(it) }
+                    .onFailure {if (it is ClassCastException) Timber.e(it) }
                     .getOrNull() ?: 0
             } else {
                 0
