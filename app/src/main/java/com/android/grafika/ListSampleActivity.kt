@@ -25,13 +25,11 @@ import androidx.compose.ui.unit.sp
 import com.android.grafika.ui.component.GrafikaTopAppBar
 import com.android.grafika.ui.component.MoreDropdownMenu
 import com.android.grafika.ui.theme.GrafikaTheme
-import timber.log.Timber
 
 class ListSampleActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        Timber.plant(Timber.DebugTree())
 
         setContent {
             GrafikaTheme {
