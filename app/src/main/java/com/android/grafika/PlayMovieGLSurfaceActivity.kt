@@ -43,6 +43,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.grafika.player.MoviePlayerV2.PlayTask
 import com.android.grafika.databinding.ActivityPlayMovieGlsurfaceBinding
 import com.android.grafika.gles.EglCore
+import com.android.grafika.gles.FrameRect
 import com.android.grafika.gles.FullFrameRect
 import com.android.grafika.gles.Texture2dProgram
 import com.android.grafika.gles.WindowSurface
@@ -153,6 +154,11 @@ class PlayMovieGLSurfaceActivity : ComponentActivity(),
                         return
                     }
 
+                    fullScreen!!.updateInfo(
+                        player.videoWidth, player.videoHeight, player.videoOrientation,
+                        frameWidth, frameHeight
+                    )
+
                     playTask = PlayTask(player, this)
                     updateUI()
                     playTask?.execute()
@@ -220,18 +226,21 @@ class PlayMovieGLSurfaceActivity : ComponentActivity(),
         eglCore.release()
     }
 
-    private var fullScreen: FullFrameRect? = null
+    private var fullScreen: FrameRect? = null
     private var textureId: Int = -1
     private var surfaceTexture: SurfaceTexture? = null
     private var stMatrix = FloatArray(16)
     private var surface: Surface? = null
 
+    private var frameWidth: Int = 0
+    private var frameHeight: Int = 0
+
     override fun onSurfaceCreated(
         gl: GL10?,
         config: EGLConfig?
     ) {
-        fullScreen = FullFrameRect(
-            Texture2dProgram(Texture2dProgram.ProgramType.TEXTURE_EXT)
+        fullScreen = FrameRect(
+            Texture2dProgram(Texture2dProgram.ProgramType.TEXTURE_EXT_CLAMP_TO_BORDER)
         )
 
         textureId = fullScreen!!.createTextureObject()
@@ -244,7 +253,10 @@ class PlayMovieGLSurfaceActivity : ComponentActivity(),
         width: Int,
         height: Int
     ) {
+        this.frameHeight = height
+        this.frameWidth = width
 
+        GLES20.glViewport(0, 0, width, height)
     }
 
     override fun onDrawFrame(gl: GL10?) {

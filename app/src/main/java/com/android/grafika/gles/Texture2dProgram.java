@@ -29,7 +29,7 @@ public class Texture2dProgram {
     private static final String TAG = GlUtil.TAG;
 
     public enum ProgramType {
-        TEXTURE_2D, TEXTURE_EXT, TEXTURE_EXT_BW, TEXTURE_EXT_FILT
+        TEXTURE_2D, TEXTURE_EXT, TEXTURE_EXT_BW, TEXTURE_EXT_FILT, TEXTURE_EXT_CLAMP_TO_BORDER
     }
 
     // Simple vertex shader, used for all programs.
@@ -63,6 +63,19 @@ public class Texture2dProgram {
             "void main() {\n" +
             "    gl_FragColor = texture2D(sTexture, vTextureCoord);\n" +
             "}\n";
+
+    private static final String FRAGMENT_SHADER_EXT_CLAMP_TO_BORDER =
+            "#extension GL_OES_EGL_image_external : require\n"
+                    + "varying mediump vec2 vTextureCoord;\n"
+                    + "uniform samplerExternalOES sTexture;\n"
+                    + "\n"
+                    + "void main() {\n"
+                    +  " gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);\n"
+                    + "  if (all(greaterThan(vTextureCoord, vec2(0.0))) \n"
+                    + "      && all(lessThan(vTextureCoord, vec2(1.0)))) {\n"
+                    + "    gl_FragColor = texture2D(sTexture, vTextureCoord);\n"
+                    + "  }\n"
+                    + "}";
 
     // Fragment shader that converts color to black & white with a simple transformation.
     private static final String FRAGMENT_SHADER_EXT_BW =
@@ -154,6 +167,10 @@ public class Texture2dProgram {
             case TEXTURE_EXT_FILT:
                 mTextureTarget = GLES11Ext.GL_TEXTURE_EXTERNAL_OES;
                 mProgramHandle = GlUtil.createProgram(VERTEX_SHADER, FRAGMENT_SHADER_EXT_FILT);
+                break;
+            case TEXTURE_EXT_CLAMP_TO_BORDER:
+                mTextureTarget = GLES11Ext.GL_TEXTURE_EXTERNAL_OES;
+                mProgramHandle = GlUtil.createProgram(VERTEX_SHADER, FRAGMENT_SHADER_EXT_CLAMP_TO_BORDER);
                 break;
             default:
                 throw new RuntimeException("Unhandled type " + programType);
