@@ -23,6 +23,8 @@ import android.media.MediaFormat
 import android.net.Uri
 import android.os.Build
 import android.os.Handler
+import android.os.HandlerThread
+import android.os.Looper
 import android.os.Message
 import android.util.Log
 import android.view.Surface
@@ -41,7 +43,7 @@ class MoviePlayerV2(
     private val sourceUri: Uri,
     private val mOutputSurface: Surface,
     var mFrameCallback: FrameCallback
-) {
+): MediaCodec.Callback() {
     // Declare this here to reduce allocations.
     private val mBufferInfo = MediaCodec.BufferInfo()
 
@@ -172,6 +174,10 @@ class MoviePlayerV2(
         mIsStopRequested = true
     }
 
+    private val useAsyncMode = true
+    private val isAsyncModeAvailable: Boolean
+        get() = useAsyncMode && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+
     /**
      * Decodes the video stream, sending frames to the surface.
      *
@@ -180,8 +186,8 @@ class MoviePlayerV2(
      * frameCallback.
      */
     @Throws(IOException::class)
-    fun play() {
-        var extractor: MediaExtractor? = null
+    fun play(handler: Handler? = null) {
+        var mediaExtractor: MediaExtractor? = null
         var decoder: MediaCodec? = null
 
         // The MediaExtractor error messages aren't very useful.  Check to see if the input
@@ -197,39 +203,55 @@ class MoviePlayerV2(
 
 
         try {
-            extractor = MediaExtractor()
-            extractor.setDataSource(parcelFileDescriptor.fileDescriptor)
+            mediaExtractor = MediaExtractor()
+            mediaExtractor.setDataSource(parcelFileDescriptor.fileDescriptor)
 
-            val trackIndex = selectTrack(extractor)
+            val trackIndex = selectTrack(mediaExtractor)
             if (trackIndex < 0) {
                 throw RuntimeException("No video track found in $sourceUri")
             }
-            extractor.selectTrack(trackIndex)
+            mediaExtractor.selectTrack(trackIndex)
 
-            val format = extractor.getTrackFormat(trackIndex)
+            val format = mediaExtractor.getTrackFormat(trackIndex)
 
             // Create a MediaCodec decoder, and configure it with the MediaFormat from the
             // extractor.  It's very important to use the format from the extractor because
             // it contains a copy of the CSD-0/CSD-1 codec-specific data chunks.
             val mime = format.getString(MediaFormat.KEY_MIME)
             decoder = MediaCodec.createDecoderByType(mime!!)
+
+
+            if (isAsyncModeAvailable) {
+                decoder.setCallback(this, handler)
+                this.extractor = mediaExtractor
+            }
+
             decoder.configure(format, mOutputSurface, null, 0)
             decoder.start()
 
-            doExtract(extractor, trackIndex, decoder, mFrameCallback)
-        } finally {
-            // release everything we grabbed
-            if (decoder != null) {
-                decoder.stop()
-                decoder.release()
-                decoder = null
-            }
-            if (extractor != null) {
-                extractor.release()
-                extractor = null
+            if (isAsyncModeAvailable) {
+                Timber.i("Start decoding asynchronously...")
             }
 
-            parcelFileDescriptor.close()
+            if (isAsyncModeAvailable.not()) {
+                doExtract(mediaExtractor, trackIndex, decoder, mFrameCallback)
+            }
+        } finally {
+            // release everything we grabbed
+            if (isAsyncModeAvailable.not()) {
+                if (decoder != null) {
+                    decoder.stop()
+                    decoder.release()
+                    decoder = null
+                }
+                if (mediaExtractor != null) {
+                    mediaExtractor.release()
+                    mediaExtractor = null
+                }
+
+                parcelFileDescriptor.close()
+            }
+
         }
     }
 
@@ -424,6 +446,93 @@ class MoviePlayerV2(
         }
     }
 
+    private var isEOS = false
+    private var extractor: MediaExtractor? = null
+    private var inputChunk = 0
+    private var outputDone = false
+
+    override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
+        val mediaExtractor = extractor!!
+
+        if (isEOS.not()) {
+            val inputBuf = codec.getInputBuffer(index)
+            if (inputBuf != null) {
+                val chunkSize = mediaExtractor.readSampleData(inputBuf, 0)
+
+                if (chunkSize < 0) {
+                    // End of stream -- send empty frame with EOS flag set
+                    codec.queueInputBuffer(
+                        index, 0, 0, 0L,
+                        MediaCodec.BUFFER_FLAG_END_OF_STREAM
+                    )
+                    isEOS = true
+                    if (VERBOSE) {
+                        Timber.d("send input EOS")
+                    }
+                } else {
+                    val presentationTimeUs = mediaExtractor.sampleTime
+                    codec.queueInputBuffer(
+                        index, 0, chunkSize,
+                        presentationTimeUs, 0 /*flags*/
+                    )
+                    if (VERBOSE) {
+                        Timber.d("submitted frame %d to dec, size=%d", inputChunk, chunkSize)
+                    }
+                    inputChunk++
+                    mediaExtractor.advance()
+                }
+            } else {
+                if (VERBOSE) {
+                    Timber.d("input buffer not available")
+                }
+            }
+        }
+    }
+
+    override fun onOutputBufferAvailable(
+        codec: MediaCodec,
+        index: Int,
+        info: MediaCodec.BufferInfo
+    ) {
+        if (outputDone.not()) {
+            if (VERBOSE) {
+                Timber.d("surface decoder given buffer %d (size=%d)", index, info.size)
+            }
+
+            if ((info.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
+                if (VERBOSE) {
+                    Timber.d("output EOS")
+                }
+                outputDone = true
+            }
+
+            val doRender = info.size != 0
+            if (doRender && mFrameCallback != null){
+                mFrameCallback.preRender(info.presentationTimeUs)
+            }
+            codec.releaseOutputBuffer(index, doRender)
+            if (doRender && mFrameCallback != null){
+                mFrameCallback.postRender()
+            }
+        }
+    }
+
+    override fun onError(
+        codec: MediaCodec,
+        e: MediaCodec.CodecException
+    ) {
+        Timber.e(e)
+    }
+
+    override fun onOutputFormatChanged(
+        codec: MediaCodec,
+        format: MediaFormat
+    ) {
+        if (VERBOSE) {
+            Timber.d("decoder output format changed: %s", format)
+        }
+    }
+
     /**
      * Thread helper for video playback.
      *
@@ -462,8 +571,13 @@ class MoviePlayerV2(
          */
         fun execute() {
             mPlayer.setLoopMode(mDoLoop)
-            mThread = Thread(this, "Movie Player")
+//            mThread = Thread(this, "Movie Player")
+            val thread = HandlerThread("Movie Player")
+            mThread = thread
             mThread!!.start()
+
+            val handler = Handler(thread.looper)
+            mPlayer.play(handler)
         }
 
         /**
@@ -513,7 +627,7 @@ class MoviePlayerV2(
             }
         }
 
-        private class LocalHandler : Handler() {
+        private class LocalHandler : Handler(Looper.myLooper() ?: Looper.getMainLooper()) {
             override fun handleMessage(msg: Message) {
                 val what = msg.what
 
