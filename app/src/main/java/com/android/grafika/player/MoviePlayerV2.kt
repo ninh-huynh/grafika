@@ -129,6 +129,8 @@ class MoviePlayerV2(
         try {
             extractor = MediaExtractor()
             extractor.setDataSource(parcelFileDescriptor.fileDescriptor)
+            parcelFileDescriptor.close()
+
             val trackIndex = selectTrack(extractor)
             if (trackIndex < 0) {
                 throw RuntimeException("No video track found in $sourceUri")
@@ -153,7 +155,6 @@ class MoviePlayerV2(
             }
         } finally {
             extractor?.release()
-            parcelFileDescriptor.close()
         }
     }
 
@@ -178,6 +179,9 @@ class MoviePlayerV2(
     private val isAsyncModeAvailable: Boolean
         get() = useAsyncMode && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
 
+    private var feedbackHandler: Handler? = null
+    private var feedback: PlayerFeedback? = null
+
     /**
      * Decodes the video stream, sending frames to the surface.
      *
@@ -186,7 +190,9 @@ class MoviePlayerV2(
      * frameCallback.
      */
     @Throws(IOException::class)
-    fun play(handler: Handler? = null) {
+    fun play(handler: Handler? = null, feedback: PlayerFeedback? = null, feedbackHandler: Handler? = null) {
+        this.feedback = feedback
+        this.feedbackHandler = feedbackHandler
         var mediaExtractor: MediaExtractor? = null
         var decoder: MediaCodec? = null
 
@@ -205,6 +211,7 @@ class MoviePlayerV2(
         try {
             mediaExtractor = MediaExtractor()
             mediaExtractor.setDataSource(parcelFileDescriptor.fileDescriptor)
+            parcelFileDescriptor.close()
 
             val trackIndex = selectTrack(mediaExtractor)
             if (trackIndex < 0) {
@@ -249,7 +256,6 @@ class MoviePlayerV2(
                     mediaExtractor = null
                 }
 
-                parcelFileDescriptor.close()
             }
 
         }
@@ -452,6 +458,13 @@ class MoviePlayerV2(
     private var outputDone = false
 
     override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
+        if (mIsStopRequested) {
+            Timber.d("Stop requested")
+            mIsStopRequested = false
+            onFinished(codec)
+            return
+        }
+
         val mediaExtractor = extractor!!
 
         if (isEOS.not()) {
@@ -494,6 +507,13 @@ class MoviePlayerV2(
         index: Int,
         info: MediaCodec.BufferInfo
     ) {
+        if (mIsStopRequested) {
+            Timber.d("Stop requested")
+            mIsStopRequested = false
+            onFinished(codec)
+            return
+        }
+
         if (outputDone.not()) {
             if (VERBOSE) {
                 Timber.d("surface decoder given buffer %d (size=%d)", index, info.size)
@@ -515,6 +535,32 @@ class MoviePlayerV2(
                 mFrameCallback.postRender()
             }
         }
+
+        if (outputDone) {
+            onFinished(codec)
+        }
+    }
+
+    private fun onFinished(codec: MediaCodec) {
+        cleanupResource(codec)
+
+        // tell anybody waiting on us that we're done
+        synchronized(stopLock) {
+            stopped = true
+            (stopLock as Object).notifyAll()
+        }
+
+        // send message through Handler so it runs on the right thread
+        val handler = feedbackHandler ?: return
+        handler.sendMessage(handler.obtainMessage(MSG_PLAY_STOPPED, feedback))
+    }
+
+    private fun cleanupResource(codec: MediaCodec) {
+        codec.stop()
+        codec.release()
+
+        extractor?.release()
+        extractor = null
     }
 
     override fun onError(
@@ -522,6 +568,8 @@ class MoviePlayerV2(
         e: MediaCodec.CodecException
     ) {
         Timber.e(e)
+
+        onFinished(codec)
     }
 
     override fun onOutputFormatChanged(
@@ -533,6 +581,28 @@ class MoviePlayerV2(
         }
     }
 
+
+    private var stopLock = Any()
+    private var stopped = false
+
+
+    /**
+     * Wait for the player to stop
+     *
+     * Called from any thread other than the
+     */
+    private fun waitForStop() {
+        synchronized(stopLock) {
+            while (!stopped) {
+                try {
+                    (stopLock as Object).wait()
+                } catch (ie: InterruptedException) {
+                    // discard
+                }
+            }
+        }
+    }
+
     /**
      * Thread helper for video playback.
      *
@@ -541,10 +611,10 @@ class MoviePlayerV2(
      * assuming that thread has a looper.  Otherwise, they will execute on the main looper.
      */
     class PlayTask(private val mPlayer: MoviePlayerV2, private val mFeedback: PlayerFeedback) :
-        Runnable {
+        Runnable, Handler.Callback {
         private var mDoLoop = false
         private var mThread: Thread? = null
-        private val mLocalHandler: LocalHandler
+        private val mLocalHandler: Handler
 
         private val mStopLock = Any()
         private var mStopped = false
@@ -556,7 +626,8 @@ class MoviePlayerV2(
          * @param mFeedback UI feedback object.
          */
         init {
-            mLocalHandler = LocalHandler()
+            val looper = Looper.myLooper() ?: Looper.getMainLooper()
+            mLocalHandler = Handler(looper, this)
         }
 
         /**
@@ -577,7 +648,7 @@ class MoviePlayerV2(
             mThread!!.start()
 
             val handler = Handler(thread.looper)
-            mPlayer.play(handler)
+            mPlayer.play(handler, mFeedback, mLocalHandler)
         }
 
         /**
@@ -597,15 +668,16 @@ class MoviePlayerV2(
          * Called from any thread other than the PlayTask thread.
          */
         fun waitForStop() {
-            synchronized(mStopLock) {
-                while (!mStopped) {
-                    try {
-                        (mStopLock as Object).wait()
-                    } catch (ie: InterruptedException) {
-                        // discard
-                    }
-                }
-            }
+//            synchronized(mStopLock) {
+//                while (!mStopped) {
+//                    try {
+//                        (mStopLock as Object).wait()
+//                    } catch (ie: InterruptedException) {
+//                        // discard
+//                    }
+//                }
+//            }
+            mPlayer.waitForStop()
         }
 
         override fun run() {
@@ -627,29 +699,28 @@ class MoviePlayerV2(
             }
         }
 
-        private class LocalHandler : Handler(Looper.myLooper() ?: Looper.getMainLooper()) {
-            override fun handleMessage(msg: Message) {
-                val what = msg.what
+        override fun handleMessage(msg: Message): Boolean {
+            val what = msg.what
 
-                when (what) {
-                    MSG_PLAY_STOPPED -> {
-                        val fb = msg.obj as PlayerFeedback
-                        fb.playbackStopped()
-                    }
-
-                    else -> throw RuntimeException("Unknown msg $what")
+            when (what) {
+                MSG_PLAY_STOPPED -> {
+                    val fb = msg.obj as PlayerFeedback
+                    fb.playbackStopped()
                 }
+
+                else -> throw RuntimeException("Unknown msg $what")
             }
+            return true
         }
 
         companion object {
-            private const val MSG_PLAY_STOPPED = 0
         }
     }
 
     companion object {
         private val TAG = MainActivity.TAG
         private const val VERBOSE = true
+        private const val MSG_PLAY_STOPPED = 0
 
         /**
          * Selects the video track, if any.
