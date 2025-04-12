@@ -26,6 +26,7 @@ android {
     applicationId "com.google.grafika"
     minSdk 21
     targetSdk 35
+    testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
   }
   namespace 'com.android.grafika'
 
@@ -81,4 +82,26 @@ dependencies {
   implementation libs.androidx.lifecycle.viewmodel.compose
 
   implementation libs.timber
+
+  // To use the androidx.test.core APIs
+  androidTestImplementation libs.androidx.core
+  // Kotlin extensions for androidx.test.core
+  androidTestImplementation libs.androidx.core.ktx
+
+  // To use the androidx.test.espresso
+//  androidTestImplementation "androidx.test.espresso:espresso-core:3.6.1"
+
+  // To use the JUnit Extension APIs
+  androidTestImplementation libs.androidx.junit
+  // Kotlin extensions for androidx.test.ext.junit
+  androidTestImplementation libs.androidx.junit.ktx
+
+  // To use the Truth Extension APIs
+  androidTestImplementation libs.androidx.truth
+
+  // To use the androidx.test.runner APIs
+  androidTestImplementation libs.androidx.runner
+
+  // To use android test orchestrator
+  androidTestUtil libs.androidx.orchestrator
 }
