@@ -83,6 +83,9 @@ dependencies {
 
   implementation libs.timber
 
+  // Kotlin
+  implementation(libs.core.ktx)
+
   // To use the androidx.test.core APIs
   androidTestImplementation libs.androidx.core
   // Kotlin extensions for androidx.test.core

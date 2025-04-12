@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.IntentCompat
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -44,7 +45,6 @@ import com.android.grafika.player.MoviePlayerV2.PlayTask
 import com.android.grafika.databinding.ActivityPlayMovieGlsurfaceBinding
 import com.android.grafika.gles.EglCore
 import com.android.grafika.gles.FrameRect
-import com.android.grafika.gles.FullFrameRect
 import com.android.grafika.gles.Texture2dProgram
 import com.android.grafika.gles.WindowSurface
 import com.android.grafika.player.MoviePlayerV2
@@ -106,13 +106,19 @@ class PlayMovieGLSurfaceActivity : ComponentActivity(),
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        val sourceUri = intent?.let { IntentCompat.getParcelableExtra(it, "source", Uri::class.java) }
+        Timber.i("Source uri from intent: $sourceUri")
+        if (sourceUri != null) {
+            onInputSelected(sourceUri.toString())
+        }
     }
 
     fun onInputSelected(filePath: String) {
         if (filePath.isNotEmpty()) {
             _playbackStateFlow.value = VideoPlaybackState.InputReady
 
-            selectedUri = if (filePath.startsWith("content://")) {
+            selectedUri = if (filePath.startsWith("content://") || filePath.startsWith("file://")) {
                 filePath.toUri()
             } else {
                 File(filesDir, filePath).toUri()
