@@ -141,6 +141,11 @@
             android:name=".PlayMovieGLSurfaceActivity"
             android:theme="@style/AppThemeModern"
             android:exported="false" />
+
+        <activity
+            android:name=".TranscodeVideoActivity"
+            android:theme="@style/AppThemeModern"
+            android:exported="false" />
     </application>
 
 </manifest>

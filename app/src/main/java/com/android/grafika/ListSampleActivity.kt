@@ -218,6 +218,12 @@ private val TESTS = listOf(
     ),
 
     ListItem(
+        "Transcode video",
+        "Transcode & edit .mp4 videos from Gallery",
+        "TranscodeVideoActivity"
+    ),
+
+    ListItem(
         "Record GL app",
         "Records GL app with FBO, re-render, or FB blit",
         "RecordFBOActivity"
@@ -258,6 +264,8 @@ private val TESTS = listOf(
         "Tests glTexImage2D() performance on 512x512 image",
         "TextureUploadActivity"
     ),
+    // https://android.googlesource.com/platform/cts/+/refs/heads/main/tests/videocodec/src/android/videocodec/cts/VideoDecodeEditEncodeTest.java
+    // https://android.googlesource.com/platform/cts/+/refs/heads/main/tests/tests/media/codec/src/android/media/codec/cts/ExtractDecodeEditEncodeMuxTest.java
     ListItem("{util} Color bars", "Shows RGB color bars", "ColorBarActivity"),
     ListItem("{util} OpenGL ES info", "Dumps info about graphics drivers", "GlesInfoActivity"),
     ListItem("{~ignore} Chor test", "Exercises bug", "ChorTestActivity"),
