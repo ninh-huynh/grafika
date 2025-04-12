@@ -175,8 +175,8 @@ class MoviePlayerV2(
         mIsStopRequested = true
     }
 
-    private val useAsyncMode = true
-    private val isAsyncModeAvailable: Boolean
+    private val useAsyncMode = false
+    val isAsyncModeAvailable: Boolean
         get() = useAsyncMode && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
 
     private var feedbackHandler: Handler? = null
@@ -190,7 +190,11 @@ class MoviePlayerV2(
      * frameCallback.
      */
     @Throws(IOException::class)
-    fun play(handler: Handler? = null, feedback: PlayerFeedback? = null, feedbackHandler: Handler? = null) {
+    fun play(
+        handler: Handler? = null,
+        feedback: PlayerFeedback? = null,
+        feedbackHandler: Handler? = null
+    ) {
         this.feedback = feedback
         this.feedbackHandler = feedbackHandler
         var mediaExtractor: MediaExtractor? = null
@@ -527,11 +531,11 @@ class MoviePlayerV2(
             }
 
             val doRender = info.size != 0
-            if (doRender && mFrameCallback != null){
+            if (doRender && mFrameCallback != null) {
                 mFrameCallback.preRender(info.presentationTimeUs)
             }
             codec.releaseOutputBuffer(index, doRender)
-            if (doRender && mFrameCallback != null){
+            if (doRender && mFrameCallback != null) {
                 mFrameCallback.postRender()
             }
         }
@@ -642,13 +646,19 @@ class MoviePlayerV2(
          */
         fun execute() {
             mPlayer.setLoopMode(mDoLoop)
-//            mThread = Thread(this, "Movie Player")
-            val thread = HandlerThread("Movie Player")
+
+            val thread = if (mPlayer.isAsyncModeAvailable) {
+                HandlerThread("Movie Player")
+            } else {
+                Thread(this, "Movie Player")
+            }
             mThread = thread
             mThread!!.start()
 
-            val handler = Handler(thread.looper)
-            mPlayer.play(handler, mFeedback, mLocalHandler)
+            if (thread is HandlerThread) {
+                val handler = Handler(thread.looper)
+                mPlayer.play(handler, mFeedback, mLocalHandler)
+            }
         }
 
         /**
@@ -668,16 +678,19 @@ class MoviePlayerV2(
          * Called from any thread other than the PlayTask thread.
          */
         fun waitForStop() {
-//            synchronized(mStopLock) {
-//                while (!mStopped) {
-//                    try {
-//                        (mStopLock as Object).wait()
-//                    } catch (ie: InterruptedException) {
-//                        // discard
-//                    }
-//                }
-//            }
-            mPlayer.waitForStop()
+            if (mPlayer.isAsyncModeAvailable) {
+                mPlayer.waitForStop()
+            } else {
+                synchronized(mStopLock) {
+                    while (!mStopped) {
+                        try {
+                            (mStopLock as Object).wait()
+                        } catch (ie: InterruptedException) {
+                            // discard
+                        }
+                    }
+                }
+            }
         }
 
         override fun run() {
