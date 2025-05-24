@@ -219,7 +219,7 @@ class TranscodeVideoActivity : ComponentActivity() {
                         .build()
                 )
                 .setMuxerFactory(
-                    DefaultMuxer.Factory()
+                    DefaultMuxer.Factory()  // FrameworkMuxer
                 )
                 .build()
 
