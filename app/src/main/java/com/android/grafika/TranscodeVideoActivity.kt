@@ -65,6 +65,7 @@ class TranscodeVideoActivity : ComponentActivity() {
 
     private var useCTSSolution = false
     private var useMedia3TransformerSolution = true
+    private val TAG = TranscodeVideoActivity::class.java.simpleName
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -91,7 +92,7 @@ class TranscodeVideoActivity : ComponentActivity() {
 
     private fun onRequestTranscodeByCTS() {
         if (selectedUri != null) {
-            Timber.i("Start config output video")
+            Timber.tag(TAG).i("Start config output video")
             val extractDecodeEditEncodeMuxVideo = ExtractDecodeEditEncodeMuxVideo()
 
             extractDecodeEditEncodeMuxVideo.setSize(1280, 720)
@@ -107,16 +108,16 @@ class TranscodeVideoActivity : ComponentActivity() {
             Executors.newSingleThreadExecutor().execute {
                 var isTranscodeSuccess: Boolean = false
                 runCatching {
-                    Timber.i("Start transcode video")
+                    Timber.tag(TAG).i("Start transcode video")
                     ExtractDecodeEditEncodeMuxVideo.TestWrapper.runTest(extractDecodeEditEncodeMuxVideo)
                 }
                     .onSuccess {
-                        Timber.i("Transcode success")
+                        Timber.tag(TAG).i("Transcode success")
                         isTranscodeSuccess = true
                     }
 
                     .onFailure {
-                        Timber.e(it)
+                        Timber.tag(TAG).e(it)
                         isTranscodeSuccess = false
                     }
 
@@ -150,7 +151,7 @@ class TranscodeVideoActivity : ComponentActivity() {
             val transformerListener: Transformer.Listener =
                 object : Transformer.Listener {
                     override fun onCompleted(compsition: Composition, result: ExportResult) {
-                        Timber.i("Transcode success")
+                        Timber.tag(TAG).i("Transcode success")
                         playOutputVideo(outputFile.toUri())
                     }
 
@@ -158,7 +159,7 @@ class TranscodeVideoActivity : ComponentActivity() {
                         composition: Composition, result: ExportResult,
                         exception: ExportException
                     ) {
-                        Timber.e(exception)
+                        Timber.tag(TAG).e(exception)
                     }
                 }
 
@@ -230,13 +231,14 @@ class TranscodeVideoActivity : ComponentActivity() {
                 .build()
 
             transformer.start(composition, outputFile.absolutePath)
+            Timber.tag(TAG).i("Start transcoding async...")
 
             val progressHolder = ProgressHolder()
             uiHandler.post(
                 object : Runnable {
                     override fun run() {
                         val progressState: @ProgressState Int = transformer.getProgress(progressHolder)
-                        Timber.i("Transcoding %d ...", progressHolder.progress)
+                        Timber.tag(TAG).i("Transcoding %d ...", progressHolder.progress)
                         if (progressState != Transformer.PROGRESS_STATE_NOT_STARTED) {
                             uiHandler.postDelayed(/* r= */this,  /* delayMillis= */500)
                         }
