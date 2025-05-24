@@ -167,12 +167,12 @@ class TranscodeVideoActivity : ComponentActivity() {
                 .apply {
                     setUri(selectedUri!!)
 
-                    setClippingConfiguration(
-                        ClippingConfiguration.Builder()
-                            .setStartPositionMs(10_000)
-                            .setEndPositionMs(20_000)
-                            .build()
-                    )
+//                    setClippingConfiguration(
+//                        ClippingConfiguration.Builder()
+//                            .setStartPositionMs(10_000)
+//                            .setEndPositionMs(20_000)
+//                            .build()
+//                    )
                 }
                 .build()
 
