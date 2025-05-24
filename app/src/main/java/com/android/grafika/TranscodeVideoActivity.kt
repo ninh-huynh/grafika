@@ -54,6 +54,7 @@ import androidx.media3.transformer.ProgressHolder
 import androidx.media3.transformer.Transformer
 import androidx.media3.transformer.Transformer.ProgressState
 import androidx.media3.transformer.VideoEncoderSettings
+import com.android.grafika.media3.transcode.MyCustomAssetLoader
 import com.android.grafika.transcode.ExtractDecodeEditEncodeMuxVideo
 import com.android.grafika.ui.theme.GrafikaTheme
 import timber.log.Timber
@@ -211,11 +212,7 @@ class TranscodeVideoActivity : ComponentActivity() {
                         .build()
                 )
                 .setAssetLoaderFactory(
-                    DefaultAssetLoaderFactory(
-                        this,
-                        DefaultDecoderFactory.Builder(this)
-                            .build(),
-                        Clock.DEFAULT)
+                    MyCustomAssetLoader.Factory(this)
                 )
                 .setVideoFrameProcessorFactory(
                     DefaultVideoFrameProcessor.Factory.Builder()
