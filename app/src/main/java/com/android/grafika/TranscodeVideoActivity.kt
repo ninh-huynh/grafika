@@ -1,5 +1,6 @@
 package com.android.grafika
 
+import android.content.Context
 import android.content.Intent
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
@@ -54,11 +55,15 @@ import androidx.media3.transformer.ProgressHolder
 import androidx.media3.transformer.Transformer
 import androidx.media3.transformer.Transformer.ProgressState
 import androidx.media3.transformer.VideoEncoderSettings
-import com.android.grafika.media3.transcode.MyCustomAssetLoader
+//import com.android.grafika.media3.transcode.MyCustomAssetLoader
 import com.android.grafika.transcode.ExtractDecodeEditEncodeMuxVideo
 import com.android.grafika.ui.theme.GrafikaTheme
 import timber.log.Timber
 import java.io.File
+import java.io.FileInputStream
+import java.net.InetSocketAddress
+import java.nio.ByteBuffer
+import java.nio.channels.SocketChannel
 import java.util.concurrent.Executors
 
 class TranscodeVideoActivity : ComponentActivity() {
@@ -80,12 +85,18 @@ class TranscodeVideoActivity : ComponentActivity() {
             {}
         }
 
+        val onRequestSendFile: () -> Unit = {
+            if (selectedUri != null) {
+                sendFileToSocket(this, selectedUri!!)
+            }
+        }
+
         setContent {
             GrafikaTheme {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                 ) { innerPadding ->
-                    TopScreenSection(innerPadding, ::onInputSelected, onRequestTranscode)
+                    TopScreenSection(innerPadding, ::onInputSelected, onRequestSendFile)
                 }
             }
         }
@@ -110,7 +121,9 @@ class TranscodeVideoActivity : ComponentActivity() {
                 var isTranscodeSuccess: Boolean = false
                 runCatching {
                     Timber.tag(TAG).i("Start transcode video")
-                    ExtractDecodeEditEncodeMuxVideo.TestWrapper.runTest(extractDecodeEditEncodeMuxVideo)
+                    ExtractDecodeEditEncodeMuxVideo.TestWrapper.runTest(
+                        extractDecodeEditEncodeMuxVideo
+                    )
                 }
                     .onSuccess {
                         Timber.tag(TAG).i("Transcode success")
@@ -186,7 +199,8 @@ class TranscodeVideoActivity : ComponentActivity() {
                             /* videoEffects= */ listOf(
                                 Presentation.createForHeight(720)
                             )
-                        ))
+                        )
+                    )
                     .build()
 
             val transformer = Transformer.Builder(this)
@@ -211,9 +225,9 @@ class TranscodeVideoActivity : ComponentActivity() {
                         )
                         .build()
                 )
-                .setAssetLoaderFactory(
-                    MyCustomAssetLoader.Factory(this)
-                )
+//                .setAssetLoaderFactory(
+//                    MyCustomAssetLoader.Factory(this)
+//                )
                 .setVideoFrameProcessorFactory(
                     DefaultVideoFrameProcessor.Factory.Builder()
                         .build()
@@ -223,9 +237,10 @@ class TranscodeVideoActivity : ComponentActivity() {
                 )
                 .build()
 
-            val composition = Composition.Builder(EditedMediaItemSequence.Builder(editedMediaItem).build())
-                .setHdrMode(Composition.HDR_MODE_TONE_MAP_HDR_TO_SDR_USING_OPEN_GL)
-                .build()
+            val composition =
+                Composition.Builder(EditedMediaItemSequence.Builder(editedMediaItem).build())
+                    .setHdrMode(Composition.HDR_MODE_TONE_MAP_HDR_TO_SDR_USING_OPEN_GL)
+                    .build()
 
             transformer.start(composition, outputFile.absolutePath)
             Timber.tag(TAG).i("Start transcoding async...")
@@ -234,7 +249,8 @@ class TranscodeVideoActivity : ComponentActivity() {
             uiHandler.post(
                 object : Runnable {
                     override fun run() {
-                        val progressState: @ProgressState Int = transformer.getProgress(progressHolder)
+                        val progressState: @ProgressState Int =
+                            transformer.getProgress(progressHolder)
                         Timber.tag(TAG).i("Transcoding %d ...", progressHolder.progress)
                         if (progressState != Transformer.PROGRESS_STATE_NOT_STARTED) {
                             uiHandler.postDelayed(/* r= */this,  /* delayMillis= */500)
@@ -286,7 +302,7 @@ fun TopScreenSection(
         Row {
 
             Button(
-                onClick = { pickVideoLauncher.launch("video/*") },
+                onClick = { pickVideoLauncher.launch("image/*") },
                 modifier = Modifier.weight(1f)
             ) {
                 Text("Local file")
@@ -310,6 +326,51 @@ fun TopScreenSection(
             }
 
             Text(text = pickedUriOrPath.value)
+        }
+    }
+}
+
+fun sendFileToSocket(
+    context: Context,
+    uri: Uri,
+    serverAddress: String = "10.0.2.2",
+    serverPort: Int = 8080,
+) {
+    Executors.newSingleThreadExecutor().submit {
+        try {
+            SocketChannel.open(InetSocketAddress(serverAddress, serverPort)).use { socketChannel ->
+                context.contentResolver.openFileDescriptor(uri, "r")?.use { parcelFileDescriptor ->
+
+                    FileInputStream(parcelFileDescriptor.fileDescriptor).channel.use { fileChannel ->
+
+                        // 1. Allocate a ByteBuffer (8KB is a common size)
+                        val buffer = ByteBuffer.allocateDirect(8192)
+
+                        Timber.d("Sending file using ByteBuffer and write()...")
+
+                        // 2. Read from fileChannel into the buffer
+                        while (fileChannel.read(buffer) != -1) {
+
+                            // 3. Flip the buffer: switches from "writing into buffer" to "reading from buffer"
+                            buffer.flip()
+
+                            // 4. Write from the buffer into the socketChannel
+                            // We use a loop because socketChannel.write() might not write all bytes at once
+                            while (buffer.hasRemaining()) {
+                                val writtenBytes = socketChannel.write(buffer)
+                                Timber.d("Wrote $writtenBytes bytes to socketChannel.")
+                            }
+
+                            // 5. Clear the buffer: prepares it for the next fileChannel.read()
+                            buffer.clear()
+                        }
+
+                        Timber.d("Transfer complete.")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Timber.d("Error: ${e.message}")
         }
     }
 }

@@ -21,11 +21,11 @@ plugins {
 
 
 android {
-  compileSdk 35
+  compileSdk = 36
   defaultConfig {
     applicationId "com.google.grafika"
-    minSdk 21
-    targetSdk 35
+    minSdk 23
+    targetSdk 36
     testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
   }
   namespace 'com.android.grafika'
@@ -64,7 +64,8 @@ dependencies {
 
   // Android Studio Preview support
   implementation libs.androidx.ui.tooling.preview
-  debugImplementation libs.androidx.ui.tooling
+    implementation libs.androidx.media3.transformer
+    debugImplementation libs.androidx.ui.tooling
 
 
   // Optional - Included automatically by material, only add when you need
